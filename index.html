@@ -124,6 +124,7 @@
     <br>
     <button id="prestigeBtn" style="display:none;">Prestige</button>
     <p>Prestige: <span id="prestigeCount">0</span></p>
+    <button id="resetBtn" style="background:red; color:white; margin-top:10px;">Reset Progress</button>
   </div>
 
 <script>
@@ -133,33 +134,54 @@
     document.getElementById('game').style.display='block';
   },3000);
 
-  const maxClicks=1000000;
-  let clicks=0, upgradeLevel=0, autoLevel=0, buyCost=100, autoCost=100, prestige=0;
-  const baseClick=1, buyIncrement=50, autoIncrement=100;
+  const maxClicks = 1000000;
+  const baseClick = 1;
+  const buyIncrement = 50;
+  const autoIncrement = 100;
 
-  const countSpan=document.getElementById('count');
-  const clickPerSpan=document.getElementById('perClick');
-  const autoSpan=document.getElementById('autoClicks');
-  const clickBtn=document.getElementById('clickBtn');
-  const buyBtn=document.getElementById('buyBtn');
-  const buyBtn10=document.getElementById('buyBtn10');
-  const autoBtn=document.getElementById('autoBtn');
-  const autoBtn10=document.getElementById('autoBtn10');
-  const costSpan=document.getElementById('cost');
-  const autoCostSpan=document.getElementById('autoCost');
-  const prestigeBtn=document.getElementById('prestigeBtn');
-  const prestigeCountSpan=document.getElementById('prestigeCount');
+  let clicks = 0, upgradeLevel = 0, autoLevel = 0, buyCost = 100, autoCost = 100, prestige = 0;
 
-  function getClicksPerClick(){ return baseClick + upgradeLevel + prestige; }
-  function getAutoClicks(){ return autoLevel + prestige; }
+  // === Загрузка прогресса ===
+  if(localStorage.getItem('clicks')) clicks = parseInt(localStorage.getItem('clicks'));
+  if(localStorage.getItem('upgradeLevel')) upgradeLevel = parseInt(localStorage.getItem('upgradeLevel'));
+  if(localStorage.getItem('autoLevel')) autoLevel = parseInt(localStorage.getItem('autoLevel'));
+  if(localStorage.getItem('prestige')) prestige = parseInt(localStorage.getItem('prestige'));
+  if(localStorage.getItem('buyCost')) buyCost = parseInt(localStorage.getItem('buyCost'));
+  if(localStorage.getItem('autoCost')) autoCost = parseInt(localStorage.getItem('autoCost'));
+
+  const countSpan = document.getElementById('count');
+  const clickPerSpan = document.getElementById('perClick');
+  const autoSpan = document.getElementById('autoClicks');
+  const clickBtn = document.getElementById('clickBtn');
+  const buyBtn = document.getElementById('buyBtn');
+  const buyBtn10 = document.getElementById('buyBtn10');
+  const autoBtn = document.getElementById('autoBtn');
+  const autoBtn10 = document.getElementById('autoBtn10');
+  const costSpan = document.getElementById('cost');
+  const autoCostSpan = document.getElementById('autoCost');
+  const prestigeBtn = document.getElementById('prestigeBtn');
+  const prestigeCountSpan = document.getElementById('prestigeCount');
+  const resetBtn = document.getElementById('resetBtn');
+
+  function getClicksPerClick(){ return baseClick + upgradeLevel + (prestige>0?1:0) + (prestige>1?1:0); }
+  function getAutoClicks(){ return autoLevel + (prestige>0?1:0) + (prestige>1?1:0); }
 
   function updateUI(){
-    countSpan.textContent=clicks.toLocaleString();
-    clickPerSpan.textContent=getClicksPerClick();
-    autoSpan.textContent=getAutoClicks();
-    costSpan.textContent=buyCost.toLocaleString();
-    autoCostSpan.textContent=autoCost.toLocaleString();
-    prestigeCountSpan.textContent=prestige;
+    countSpan.textContent = clicks.toLocaleString();
+    clickPerSpan.textContent = getClicksPerClick();
+    autoSpan.textContent = getAutoClicks();
+    costSpan.textContent = buyCost.toLocaleString();
+    autoCostSpan.textContent = autoCost.toLocaleString();
+    prestigeCountSpan.textContent = prestige;
+  }
+
+  function saveProgress(){
+    localStorage.setItem('clicks', clicks);
+    localStorage.setItem('upgradeLevel', upgradeLevel);
+    localStorage.setItem('autoLevel', autoLevel);
+    localStorage.setItem('prestige', prestige);
+    localStorage.setItem('buyCost', buyCost);
+    localStorage.setItem('autoCost', autoCost);
   }
 
   function checkVictory(){
@@ -178,17 +200,21 @@
       autoBtn.disabled=false;
       autoBtn10.disabled=false;
     }
+    saveProgress();
   }
 
-  clickBtn.addEventListener('click', ()=>{ clicks += getClicksPerClick(); updateUI(); checkVictory(); });
+  clickBtn.addEventListener('click', ()=>{
+    clicks += getClicksPerClick();
+    updateUI(); checkVictory();
+  });
 
   function buyUpgrade(times=1){
     for(let i=0;i<times;i++){
       if(clicks>=buyCost){
-        clicks-=buyCost;
-        upgradeLevel+=1;
-        if(prestige>0) upgradeLevel+=1; // бонус только при покупке апгрейда
-        buyCost+=buyIncrement;
+        clicks -= buyCost;
+        upgradeLevel += 1;
+        if(prestige>0) upgradeLevel +=1; // бонус после Prestige
+        buyCost += buyIncrement;
       }
     }
     updateUI(); checkVictory();
@@ -197,10 +223,10 @@
   function buyAuto(times=1){
     for(let i=0;i<times;i++){
       if(clicks>=autoCost){
-        clicks-=autoCost;
-        autoLevel+=1;
-        if(prestige>0) autoLevel+=1; // бонус только при покупке автоклика
-        autoCost+=autoIncrement;
+        clicks -= autoCost;
+        autoLevel += 1;
+        if(prestige>0) autoLevel +=1; // бонус после Prestige
+        autoCost += autoIncrement;
       }
     }
     updateUI(); checkVictory();
@@ -213,7 +239,16 @@
 
   prestigeBtn.addEventListener('click', ()=>{
     clicks=0; upgradeLevel=0; autoLevel=0; buyCost=100; autoCost=100; prestige++;
-    updateUI(); checkVictory();
+    updateUI(); checkVictory(); saveProgress();
+  });
+
+  resetBtn.addEventListener('click', ()=>{
+    if(confirm('Вы уверены, что хотите сбросить весь прогресс? Это действие нельзя отменить!')){
+      clicks = 0; upgradeLevel = 0; autoLevel = 0; buyCost = 100; autoCost = 100; prestige = 0;
+      localStorage.clear();
+      updateUI(); checkVictory();
+      alert('Прогресс полностью сброшен!');
+    }
   });
 
   setInterval(()=>{
