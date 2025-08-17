@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Игра с кубом</title>
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(to bottom, #2b2b2b, #6e6e6e, #2b2b2b);
+  }
+
+  /* Фон с кубом */
+  .background {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    perspective: 1200px;
+    z-index: 0;
+  }
+
+  .cube {
+    position: relative;
+    width: 400px;
+    height: 400px;
+    transform-style: preserve-3d;
+    animation: spin 12s linear infinite;
+  }
+
+  .face {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    border: 2px solid #000;
+  }
+
+  .front  { transform: rotateY(0deg) translateZ(200px);  background: red; }
+  .back   { transform: rotateY(180deg) translateZ(200px); background: blue; }
+  .right  { transform: rotateY(90deg) translateZ(200px);  background: lime; }
+  .left   { transform: rotateY(-90deg) translateZ(200px); background: orange; }
+  .top    { transform: rotateX(90deg) translateZ(200px);  background: yellow; }
+  .bottom { transform: rotateX(-90deg) translateZ(200px); background: purple; }
+
+  @keyframes spin {
+    0%   { transform: rotateX(0deg) rotateY(0deg); }
+    100% { transform: rotateX(360deg) rotateY(360deg); }
+  }
+
+  /* Игра */
+  .game {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    background: rgba(0,0,0,0.6);
+    padding: 20px;
+    border-radius: 12px;
+  }
+
+  button {
+    font-size: 18px;
+    padding: 10px 20px;
+    margin: 5px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+  <div class="background">
+    <div class="cube">
+      <div class="face front"></div>
+      <div class="face back"></div>
+      <div class="face right"></div>
+      <div class="face left"></div>
+      <div class="face top"></div>
+      <div class="face bottom"></div>
+    </div>
+  </div>
+
+  <div class="game">
+    <h1>Нажми кнопку 1 000 000 раз!</h1>
+    <p>Нажато: <span id="count">0</span>/1000000</p>
+    <p>Клики за одно нажатие: <span id="perClick">1</span></p>
+    <p>Автоклики в сек: <span id="autoClicks">0</span></p>
+
+    <button id="clickBtn">Нажми меня!</button>
+    <br>
+    <button id="buyBtn">Купить улучшение (+1 за клик, стоимость: <span id="cost">100</span>)</button>
+    <button id="buyBtn10">Купить улучшение x10</button>
+    <br>
+    <button id="autoBtn">Купить автоклик (+1/сек, стоимость: <span id="autoCost">100</span>)</button>
+    <button id="autoBtn10">Купить автоклик x10</button>
+  </div>
+
+<script>
+let clicks = 0;
+const maxClicks = 1000000;
+
+let clicksPerClick = 1;
+let buyCost = 100;
+const buyIncrement = 50;
+
+let autoClicks = 0;
+let autoCost = 100;
+const autoIncrement = 100;
+
+const countSpan = document.getElementById('count');
+const clickPerSpan = document.getElementById('perClick');
+const autoSpan = document.getElementById('autoClicks');
+const clickBtn = document.getElementById('clickBtn');
+const buyBtn = document.getElementById('buyBtn');
+const buyBtn10 = document.getElementById('buyBtn10');
+const autoBtn = document.getElementById('autoBtn');
+const autoBtn10 = document.getElementById('autoBtn10');
+const costSpan = document.getElementById('cost');
+const autoCostSpan = document.getElementById('autoCost');
+
+clickBtn.addEventListener('click', () => {
+  clicks += clicksPerClick;
+  updateUI();
+  checkVictory();
+});
+
+function buyUpgrade(times=1) {
+  for (let i=0; i<times; i++) {
+    if (clicks >= buyCost) {
+      clicks -= buyCost;
+      clicksPerClick += 1;
+      buyCost += buyIncrement;
+    }
+  }
+  updateUI();
+  checkVictory();
+}
+
+function buyAuto(times=1) {
+  for (let i=0; i<times; i++) {
+    if (clicks >= autoCost) {
+      clicks -= autoCost;
+      autoClicks += 1;
+      autoCost += autoIncrement;
+    }
+  }
+  updateUI();
+  checkVictory();
+}
+
+buyBtn.addEventListener('click', () => buyUpgrade(1));
+buyBtn10.addEventListener('click', () => buyUpgrade(10));
+autoBtn.addEventListener('click', () => buyAuto(1));
+autoBtn10.addEventListener('click', () => buyAuto(10));
+
+setInterval(() => {
+  if (autoClicks > 0) {
+    clicks += autoClicks;
+    updateUI();
+    checkVictory();
+  }
+}, 1000);
+
+function updateUI() {
+  countSpan.textContent = clicks.toLocaleString();
+  clickPerSpan.textContent = clicksPerClick;
+  autoSpan.textContent = autoClicks;
+  costSpan.textContent = buyCost.toLocaleString();
+  autoCostSpan.textContent = autoCost.toLocaleString();
+}
+
+function checkVictory() {
+  if (clicks >= maxClicks) {
+    alert('Поздравляем! Ты достиг 1 000 000 кликов!');
+    clickBtn.disabled = true;
+    buyBtn.disabled = true;
+    buyBtn10.disabled = true;
+    autoBtn.disabled = true;
+    autoBtn10.disabled = true;
+  }
+}
+
+window.addEventListener('beforeunload', (e) => {
+  if (clicks < maxClicks) {
+    e.preventDefault();
+    e.returnValue = '';
+    return '';
+  }
+});
+</script>
+</body>
+  </html>
