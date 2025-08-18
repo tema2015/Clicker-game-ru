@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>ClickToNothing</title>
+<title>Игра с кубом</title>
 <style>
   body {
     margin: 0;
@@ -52,6 +52,7 @@
     perspective: 1200px;
     z-index: 0;
   }
+
   .cube {
     position: relative;
     width: 400px;
@@ -59,18 +60,21 @@
     transform-style: preserve-3d;
     animation: spinCube 12s linear infinite;
   }
+
   .face {
     position: absolute;
     width: 400px;
     height: 400px;
     border: 2px solid #000;
   }
+
   .front  { transform: rotateY(0deg) translateZ(200px);  background: red; }
   .back   { transform: rotateY(180deg) translateZ(200px); background: blue; }
   .right  { transform: rotateY(90deg) translateZ(200px);  background: lime; }
   .left   { transform: rotateY(-90deg) translateZ(200px); background: orange; }
   .top    { transform: rotateX(90deg) translateZ(200px);  background: yellow; }
   .bottom { transform: rotateX(-90deg) translateZ(200px); background: purple; }
+
   @keyframes spinCube {
     0%   { transform: rotateX(0deg) rotateY(0deg); }
     100% { transform: rotateX(360deg) rotateY(360deg); }
@@ -84,77 +88,78 @@
     background: rgba(0,0,0,0.6);
     padding: 20px;
     border-radius: 12px;
-    display: none; /* изначально скрыта */
+    display: none; /* скрыта изначально */
   }
+
   button {
     font-size: 18px;
     padding: 10px 20px;
     margin: 5px;
     cursor: pointer;
   }
-  #resetBtn { background:red; color:white; }
-  #protectionBtn { background: purple; color:white; }
+
+  #resetBtn {
+    background: red;
+    color: white;
+  }
 </style>
 </head>
 <body>
-
-<!-- Фейковая Cloudflare проверка -->
-<div id="cf-check">
-  <h2>Checking your browser before accessing clicktonothing.netlify.app...</h2>
-  <p>Please wait, this process is automatic. Your browser will redirect shortly.</p>
-  <div class="spinner"></div>
-  <p>DDoS protection by <b>tg:exdevrev FREE!!</b></p>
-</div>
-
-<!-- Куб -->
-<div class="background">
-  <div class="cube">
-    <div class="face front"></div>
-    <div class="face back"></div>
-    <div class="face right"></div>
-    <div class="face left"></div>
-    <div class="face top"></div>
-    <div class="face bottom"></div>
+  <!-- Фейковая проверка -->
+  <div id="cf-check">
+    <h2>Checking your browser before accessing clicktonothing.netlify.app...</h2>
+    <p>Please wait, this process is automatic. Your browser will redirect shortly.</p>
+    <div class="spinner"></div>
+    <button id="protectionBtn">Get Protection</button>
+    <p>DDoS protection by <b>tg:exdevrev FREE!!</b></p>
   </div>
-</div>
 
-<!-- Игра -->
-<div class="game" id="game">
-  <h1>Нажми кнопку 1 000 000 раз!</h1>
-  <p>Нажато: <span id="count">0</span>/1000000</p>
-  <p>Клики за одно нажатие: <span id="perClick">1</span></p>
-  <p>Автоклики в сек: <span id="autoClicks">0</span></p>
-  <p>Престиж: <span id="prestige">0</span></p>
+  <!-- Куб -->
+  <div class="background">
+    <div class="cube">
+      <div class="face front"></div>
+      <div class="face back"></div>
+      <div class="face right"></div>
+      <div class="face left"></div>
+      <div class="face top"></div>
+      <div class="face bottom"></div>
+    </div>
+  </div>
 
-  <button id="clickBtn">Нажми меня!</button>
-  <br>
-  <button id="buyBtn">Купить улучшение (+1 за клик, стоимость: <span id="cost">100</span>)</button>
-  <button id="buyBtn10">Купить улучшение x10</button>
-  <br>
-  <button id="autoBtn">Купить автоклик (+1/сек, стоимость: <span id="autoCost">100</span>)</button>
-  <button id="autoBtn10">Купить автоклик x10</button>
-  <br>
-  <button id="prestigeBtn" style="display:none;">Prestige!</button>
-  <br>
-  <button id="resetBtn">Reset Progress</button>
-  <button id="protectionBtn">Get Protection</button>
-</div>
+  <!-- Игра -->
+  <div class="game" id="game">
+    <h1>Нажми кнопку 1 000 000 раз!</h1>
+    <p>Нажато: <span id="count">0</span>/1000000</p>
+    <p>Клики за одно нажатие: <span id="perClick">1</span></p>
+    <p>Автоклики в сек: <span id="autoClicks">0</span></p>
+    <p>Престиж: <span id="prestige">0</span></p>
+
+    <button id="clickBtn">Нажми меня!</button>
+    <br>
+    <button id="buyBtn">Купить улучшение (+1 за клик, стоимость: <span id="cost">100</span>)</button>
+    <button id="buyBtn10">Купить улучшение x10</button>
+    <br>
+    <button id="autoBtn">Купить автоклик (+1/сек, стоимость: <span id="autoCost">100</span>)</button>
+    <button id="autoBtn10">Купить автоклик x10</button>
+    <br>
+    <button id="prestigeBtn" style="display:none;">Prestige</button>
+    <br>
+    <button id="resetBtn">Reset</button>
+  </div>
 
 <script>
-  // Фейковая проверка Cloudflare (3 секунды)
+  // === Фейковая проверка ===
+  const protectionBtn = document.getElementById('protectionBtn');
+  protectionBtn.addEventListener('click', () => {
+    window.open('https://t.me/exdevrev', '_blank');
+  });
+
   setTimeout(() => {
     document.getElementById('cf-check').style.display = 'none';
     document.getElementById('game').style.display = 'block';
   }, 3000);
 
-  // === Логика игры ===
-  let clicks = 0;
-  let upgradeLevel = 0;
-  let autoLevel = 0;
-  let buyCost = 100;
-  let autoCost = 100;
-  let prestige = 0;
-
+  // === Инициализация ===
   const countSpan = document.getElementById('count');
   const clickPerSpan = document.getElementById('perClick');
   const autoSpan = document.getElementById('autoClicks');
@@ -164,30 +169,29 @@
   const buyBtn10 = document.getElementById('buyBtn10');
   const autoBtn = document.getElementById('autoBtn');
   const autoBtn10 = document.getElementById('autoBtn10');
-  const costSpan = document.getElementById('cost');
-  const autoCostSpan = document.getElementById('autoCost');
   const prestigeBtn = document.getElementById('prestigeBtn');
   const resetBtn = document.getElementById('resetBtn');
-  const protectionBtn = document.getElementById('protectionBtn');
+
+  let clicks = 0;
+  let upgradeLevel = 0;
+  let autoLevel = 0;
+  let buyCost = 100;
+  let autoCost = 100;
+  let prestige = 0;
+  const maxClicks = 1000000;
 
   function getClicksPerClick() { return 1 + upgradeLevel + prestige; }
+  function getAutoPerSec() { return autoLevel + prestige; }
 
-  function updateUI() {
-    countSpan.textContent = clicks.toLocaleString();
-    clickPerSpan.textContent = 1 + upgradeLevel + prestige;
-    autoSpan.textContent = autoLevel + prestige;
-    prestigeSpan.textContent = prestige;
-    costSpan.textContent = buyCost.toLocaleString();
-    autoCostSpan.textContent = autoCost.toLocaleString();
-    prestigeBtn.style.display = clicks >= 1000000 ? 'inline-block' : 'none';
-  }
-
+  // === Сохранение и загрузка прогресса ===
   function saveProgress() {
-    localStorage.setItem('clickGame', JSON.stringify({clicks, upgradeLevel, autoLevel, buyCost, autoCost, prestige}));
+    localStorage.setItem('clickGameSave', JSON.stringify({
+      clicks, upgradeLevel, autoLevel, buyCost, autoCost, prestige
+    }));
   }
 
   function loadProgress() {
-    const save = localStorage.getItem('clickGame');
+    const save = localStorage.getItem('clickGameSave');
     if(save){
       const data = JSON.parse(save);
       clicks = data.clicks;
@@ -196,37 +200,96 @@
       buyCost = data.buyCost;
       autoCost = data.autoCost;
       prestige = data.prestige;
+    }
+    updateUI();
+  }
+
+  function updateUI() {
+    countSpan.textContent = clicks.toLocaleString();
+    clickPerSpan.textContent = getClicksPerClick();
+    autoSpan.textContent = getAutoPerSec();
+    prestigeSpan.textContent = prestige;
+    document.getElementById('cost').textContent = buyCost.toLocaleString();
+    document.getElementById('autoCost').textContent = autoCost.toLocaleString();
+    prestigeBtn.style.display = clicks >= maxClicks ? 'inline-block' : 'none';
+  }
+
+  // === Клики ===
+  clickBtn.addEventListener('click', () => {
+    clicks += getClicksPerClick();
+    updateUI();
+    saveProgress();
+    checkVictory();
+  });
+
+  function buyUpgrade(times=1) {
+    for(let i=0;i<times;i++){
+      if(clicks >= buyCost){
+        clicks -= buyCost;
+        upgradeLevel++;
+        buyCost = Math.floor(buyCost * 1.5);
+      }
+    }
+    updateUI();
+    saveProgress();
+    checkVictory();
+  }
+
+  function buyAuto(times=1) {
+    for(let i=0;i<times;i++){
+      if(clicks >= autoCost){
+        clicks -= autoCost;
+        autoLevel++;
+        autoCost = Math.floor(autoCost * 1.5);
+      }
+    }
+    updateUI();
+    saveProgress();
+    checkVictory();
+  }
+
+  buyBtn.addEventListener('click', ()=>buyUpgrade(1));
+  buyBtn10.addEventListener('click', ()=>buyUpgrade(10));
+  autoBtn.addEventListener('click', ()=>buyAuto(1));
+  autoBtn10.addEventListener('click', ()=>buyAuto(10));
+
+  // === Автоклик ===
+  setInterval(()=>{
+    if(autoLevel>0){
+      clicks += getAutoPerSec();
       updateUI();
+      saveProgress();
+      checkVictory();
+    }
+  },1000);
+
+  // === Prestige ===
+  prestigeBtn.addEventListener('click', ()=>{
+    if(clicks>=maxClicks){
+      clicks=0; upgradeLevel=0; autoLevel=0; buyCost=100; autoCost=100;
+      prestige++;
+      updateUI();
+      saveProgress();
+    }
+  });
+
+  // === Reset ===
+  resetBtn.addEventListener('click', ()=>{
+    if(confirm("Вы точно хотите сбросить весь прогресс?")){
+      clicks=0; upgradeLevel=0; autoLevel=0; buyCost=100; autoCost=100; prestige=0;
+      localStorage.removeItem('clickGameSave');
+      updateUI();
+    }
+  });
+
+  // === Проверка победы ===
+  function checkVictory(){
+    if(clicks>=maxClicks){
+      alert('Поздравляем! Ты достиг 1 000 000 кликов!');
     }
   }
 
-  clickBtn.addEventListener('click', () => {
-    clicks += getClicksPerClick();
-    updateUI(); saveProgress();
-  });
-
-  buyBtn.addEventListener('click', () => { if(clicks >= buyCost){ clicks -= buyCost; upgradeLevel += 1; buyCost = Math.floor(buyCost*1.5); updateUI(); saveProgress(); } });
-  buyBtn10.addEventListener('click', () => { for(let i=0;i<10;i++){ if(clicks>=buyCost){ clicks-=buyCost; upgradeLevel+=1; buyCost=Math.floor(buyCost*1.5); } } updateUI(); saveProgress(); });
-  autoBtn.addEventListener('click', () => { if(clicks >= autoCost){ clicks-=autoCost; autoLevel+=1; autoCost=Math.floor(autoCost*1.5); updateUI(); saveProgress(); } });
-  autoBtn10.addEventListener('click', () => { for(let i=0;i<10;i++){ if(clicks>=autoCost){ clicks-=autoCost; autoLevel+=1; autoCost=Math.floor(autoCost*1.5); } } updateUI(); saveProgress(); });
-
-  prestigeBtn.addEventListener('click', () => {
-    if(clicks>=1000000){
-      clicks=0; upgradeLevel=0; autoLevel=0; buyCost=100; autoCost=100; prestige++; updateUI(); saveProgress();
-    }
-  });
-
-  resetBtn.addEventListener('click', () => {
-    if(confirm('Вы уверены, что хотите сбросить весь прогресс?')){
-      clicks=0; upgradeLevel=0; autoLevel=0; buyCost=100; autoCost=100; prestige=0;
-      localStorage.clear(); updateUI(); alert('Прогресс полностью сброшен!');
-    }
-  });
-
-  protectionBtn.addEventListener('click', () => { window.open('https://t.me/exdevrev','_blank'); });
-
-  setInterval(() => { if(autoLevel>0) clicks+=autoLevel+prestige; updateUI(); saveProgress(); },1000);
-
+  // === Загрузка прогресса при старте ===
   loadProgress();
 </script>
 </body>
